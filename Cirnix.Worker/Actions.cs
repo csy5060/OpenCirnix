@@ -81,6 +81,7 @@ namespace Cirnix.Worker
             commandList.Register("lc", "ㅣㅊ", LoadCode);
             commandList.Register("tlc", "싳", LoadCode2);
             commandList.Register("olc", "ㅐㅣㅊ", LoadCode3);
+            commandList.Register("mlc", "ㅡㅣㅊ", LoadCode4);
             commandList.Register("dr", "ㅇㄱ", SetGameDelay);
             commandList.Register("ss", "ㄴㄴ", SetStartSpeed);
             commandList.Register("hp", "ㅗㅔ", SetHPView);
@@ -406,7 +407,45 @@ namespace Cirnix.Worker
         Error:
             SendMsg(true, "Error - 기록된 코드가 없거나, 파일을 읽을 수 없습니다.");
         }
-
+        
+        internal static async void LoadCode4(string[] args)
+        {
+            if (args?.Length > 1 && !string.IsNullOrEmpty(args[1]))
+            {
+                string saveName = GetSafeFullArgs(args);
+                string path = $"{GetCurrentPath(0)}\\{saveName}";
+                SendMsg(false, new string[] { path });
+                if (!Directory.Exists(path))
+                {
+                    SendMsg(true, $"{IsKoreanBlock(saveName, "은", "는")} 존재하지 않습니다.");
+                    return;
+                }
+                Settings.HeroType = Category[1] = saveName;
+                Category[2] = Path.GetFileName(GetLastest(GetCurrentPath(1)));
+                ListUpdate(2);
+            }
+            try
+            {
+                GetCodes3();
+            }
+            catch
+            {
+                goto Error;
+            }
+            if (string.IsNullOrEmpty(Code[0])) goto Error;
+            SendMsg(true, $"{Category[1]}\\{Category[2]} 파일을 로드합니다.");
+            for (int i = 0; i < 24; i++)
+            {
+                if (string.IsNullOrEmpty(Code[i])) break;
+                SendMsg(false, new string[] { Code[i].Substring(0, Code[i].Length >= 130 ? 130 : Code[i].Length) }, Settings.GlobalDelay);
+            }
+            await Task.Delay(500);
+            TypeCommands();
+            return;
+        Error:
+            SendMsg(true, "Error - 기록된 코드가 없거나, 파일을 읽을 수 없습니다.");
+        }
+        
         internal static void LoadCommands(string[] args)
         {
             if (args?.Length > 1 && !string.IsNullOrEmpty(args[1]))
